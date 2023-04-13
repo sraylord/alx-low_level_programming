@@ -10,6 +10,7 @@
 void _puts(char *str)
 {
 	int i = 0;
+
 	while (str[i])
 	{
 		_putchar(str[i]);
@@ -59,7 +60,7 @@ void print_int(unsigned long int n)
 	for (i = 0; n / divisor > 9; i++, divisor *= 10)
 	;
 
-	for (; divisor >= 1; n %= divisor , divisor /= 10)
+	for (; divisor >= 1; n %= divisor, divisor /= 10)
 	{
 		resp = n / divisor;
 		_putchar('0' + resp);
