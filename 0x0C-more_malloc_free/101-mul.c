@@ -25,7 +25,7 @@ void _puts(char *str)
 
 int _atoi(const char *s)
 {
-	int sing = 1;
+	int sign = 1;
 
 	unsigned long int resp = 0, firstNum, i;
 
