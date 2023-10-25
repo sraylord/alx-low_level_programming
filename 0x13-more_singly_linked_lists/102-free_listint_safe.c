@@ -1,101 +1,64 @@
-i/*
- * File: 102-free_listint_safe.c
- * Auth: Gedeon Obae Gekonge
- */
-
 #include "lists.h"
-
-size_t looped_listint_count(listint_t *head);
-size_t free_listint_safe(listint_t **h);
+#include <stdlib.h>
 
 /**
- * looped_listint_count - Counts the number of unique nodes
- *                      in a looped listint_t linked list.
- * @head: A pointer to the head of the listint_t to check.
+ * find_listint_loop_fl - finds a loop in a linked list
  *
- * Return: If the list is not looped - 0.
- *         Otherwise - the number of unique nodes in the list.
+ * @head: linked list to search
+ *
+ * Return: address of node where loop starts/returns, NULL if no loop
  */
-size_t looped_listint_count(listint_t *head)
+listint_t *find_listint_loop_fl(listint_t *head)
 {
-	listint_t *tortoise, *hare;
-	size_t nodes = 1;
+	listint_t *ptr, *end;
 
-	if (head == NULL || head->next == NULL)
-		return (0);
-
-	tortoise = head->next;
-	hare = (head->next)->next;
-
-	while (hare)
+	if (head == NULL)
+		return (NULL);
+	for (end = head->next; end != NULL; end = end->next)
 	{
-		if (tortoise == hare)
-		{
-			tortoise = head;
-			while (tortoise != hare)
-			{
-				nodes++;
-				tortoise = tortoise->next;
-				hare = hare->next;
-			}
-
-			tortoise = tortoise->next;
-			while (tortoise != hare)
-			{
-				nodes++;
-				tortoise = tortoise->next;
-			}
-
-			return (nodes);
-		}
-
-		tortoise = tortoise->next;
-		hare = (hare->next)->next;
+		if (end == end->next)
+			return (end);
+		for (ptr = head; ptr != end; ptr = ptr->next)
+			if (ptr == end->next)
+				return (end->next);
 	}
-
-	return (0);
+	return (NULL);
 }
 
 /**
- * free_listint_safe - Frees a listint_t list safely (ie.
- *                     can free lists containing loops)
- * @h: A pointer to the address of
- *     the head of the listint_t list.
+ * free_listint_safe - frees a listint list, even if it has a loop
  *
- * Return: The size of the list that was freed.
+ * @h: head of list
  *
- * Description: The function sets the head to NULL.
+ * Return: number of nodes freed
  */
 size_t free_listint_safe(listint_t **h)
 {
-	listint_t *tmp;
-	size_t nodes, index;
+	listint_t *next, *loopnode;
+	size_t len;
+	int loop = 1;
 
-	nodes = looped_listint_count(*h);
-
-	if (nodes == 0)
+	if (h == NULL || *h == NULL)
+		return (0);
+	loopnode = find_listint_loop_fl(*h);
+	for (len = 0; (*h != loopnode || loop) && *h != NULL; *h = next)
 	{
-		for (; h != NULL && *h != NULL; nodes++)
+		len++;
+		next = (*h)->next;
+		if (*h == loopnode && loop)
 		{
-			tmp = (*h)->next;
-			free(*h);
-			*h = tmp;
+			if (loopnode == loopnode->next)
+			{
+				free(*h);
+				break;
+			}
+			len++;
+			next = next->next;
+			free((*h)->next);
+			loop = 0;
 		}
+		free(*h);
 	}
-
-	else
-	{
-		for (index = 0; index < nodes; index++)
-		{
-			tmp = (*h)->next;
-			free(*h);
-			*h = tmp;
-		}
-
-		*h = NULL;
-	}
-
-	h = NULL;
-
-	return (nodes);
+	*h = NULL;
+	return (len);
 }
